@@ -1,12 +1,16 @@
 import phrases from './phrases.json';
 import assessments from './assessments.json';
+import rebuttals from './rebuttals.json';
 
 type Category = 'verdict' | 'probability' | 'fascinating' | 'emotion' | 'advice';
+type RebuttalCat = Category | 'assessment';
 type Phrase = { id: number; category: Category; phrase: string };
+type Rebuttal = { id: number; category: RebuttalCat; rebuttal: string };
 
 const VALID_CATEGORIES: Category[] = ['verdict', 'probability', 'fascinating', 'emotion', 'advice'];
 const PHRASES = phrases as Phrase[];
 const ASSESSMENTS = assessments as string[];
+const REBUTTALS = rebuttals as Rebuttal[];
 
 function pseudoProbability(): string {
   return (Math.random() * 11.9999 + 0.0001).toFixed(4) + '%';
@@ -29,24 +33,32 @@ function stdHeaders(extra: Record<string, string> = {}): HeadersInit {
   return { 'Access-Control-Allow-Origin': '*', 'X-Live-Long': 'and-prosper', ...extra };
 }
 
-function json(body: unknown, status = 200): Response {
+function json(body: unknown, status = 200, extra: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: stdHeaders({ 'Content-Type': 'application/json; charset=utf-8' }),
+    headers: stdHeaders({ 'Content-Type': 'application/json; charset=utf-8', ...extra }),
   });
 }
 
-function text(body: string, status = 200): Response {
+function text(body: string, status = 200, extra: Record<string, string> = {}): Response {
   return new Response(body, {
     status,
-    headers: stdHeaders({ 'Content-Type': 'text/plain; charset=utf-8' }),
+    headers: stdHeaders({ 'Content-Type': 'text/plain; charset=utf-8', ...extra }),
   });
+}
+
+function pickRebuttal(cat: RebuttalCat): string {
+  return pick(REBUTTALS.filter((r) => r.category === cat)).rebuttal;
 }
 
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const isText = url.searchParams.get('format') === 'text';
+    const modeParam = url.searchParams.get('mode');
+    const isMcCoy = modeParam === 'mccoy';
+    const badMode = modeParam !== null && !isMcCoy;
+    const mccoyHdr = isMcCoy ? { 'X-Dammit-Jim': "I'm a doctor" } : {};
 
     // GET /health
     if (url.pathname === '/health') {
@@ -54,8 +66,12 @@ export default {
       return isText ? text(status) : json({ status });
     }
 
-    // GET /logic[?category=X][&format=text]
+    // GET /logic[?category=X][&mode=mccoy][&format=text]
     if (url.pathname === '/logic') {
+      if (badMode) {
+        const err = { error: 'Unknown mode. The only known antidote to logic is McCoy.' };
+        return isText ? text(err.error, 400) : json(err, 400);
+      }
       const catParam = url.searchParams.get('category');
       let pool = PHRASES;
 
@@ -67,9 +83,16 @@ export default {
       }
 
       const picked = pick(pool);
-      return isText
-        ? text(picked.phrase)
-        : json({ phrase: picked.phrase, category: picked.category, probability_of_success: pseudoProbability() });
+      const rebuttal = isMcCoy ? pickRebuttal(picked.category) : undefined;
+      if (isText) {
+        const out = isMcCoy ? `${picked.phrase}\n${rebuttal}` : picked.phrase;
+        return text(out, 200, mccoyHdr);
+      }
+      return json(
+        { phrase: picked.phrase, category: picked.category, probability_of_success: pseudoProbability(), ...(isMcCoy && { rebuttal }) },
+        200,
+        mccoyHdr,
+      );
     }
 
     // GET /categories
@@ -83,8 +106,12 @@ export default {
         : json({ categories });
     }
 
-    // GET /assess?claim=<string>
+    // GET /assess?claim=<string>[&mode=mccoy][&format=text]
     if (url.pathname === '/assess') {
+      if (badMode) {
+        const err = { error: 'Unknown mode. The only known antidote to logic is McCoy.' };
+        return isText ? text(err.error, 400) : json(err, 400);
+      }
       const raw = url.searchParams.get('claim');
 
       if (raw === null || raw.trim() === '') {
@@ -101,10 +128,17 @@ export default {
       const verdict = `After analysis, the claim '${claim}' is illogical.`;
       const reasoning = pick(ASSESSMENTS);
       const probability_of_success = pseudoProbability();
+      const rebuttal = isMcCoy ? pickRebuttal('assessment') : undefined;
 
-      return isText
-        ? text(`${verdict}\n${reasoning}`)
-        : json({ claim, verdict, reasoning, probability_of_success });
+      if (isText) {
+        const out = isMcCoy ? `${verdict}\n${reasoning}\n${rebuttal}` : `${verdict}\n${reasoning}`;
+        return text(out, 200, mccoyHdr);
+      }
+      return json(
+        { claim, verdict, reasoning, probability_of_success, ...(isMcCoy && { rebuttal }) },
+        200,
+        mccoyHdr,
+      );
     }
 
     // 404

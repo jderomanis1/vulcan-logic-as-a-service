@@ -192,3 +192,78 @@ describe('Unknown routes', () => {
     await expectStandardHeaders(res);
   });
 });
+
+// ── ?mode=mccoy ───────────────────────────────────────────────────────────────
+describe('?mode=mccoy on /logic', () => {
+  it('adds rebuttal field to JSON response', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=mccoy');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { phrase: string; category: string; probability_of_success: string; rebuttal: string };
+    expect(typeof body.rebuttal).toBe('string');
+    expect(body.rebuttal.length).toBeGreaterThan(0);
+    expect(typeof body.phrase).toBe('string');
+    expect(typeof body.probability_of_success).toBe('string');
+  });
+
+  it('format=text with mode=mccoy returns exactly two lines', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=mccoy&format=text');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toMatch(/text\/plain/);
+    const txt = await res.text();
+    const lines = txt.split('\n');
+    expect(lines).toHaveLength(2);
+    lines.forEach((l) => expect(l.length).toBeGreaterThan(0));
+  });
+
+  it('sets X-Dammit-Jim header', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=mccoy');
+    expect(res.headers.get('X-Dammit-Jim')).toBeTruthy();
+  });
+
+  it('unknown mode returns 400 with McCoy error', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=spock');
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBe('Unknown mode. The only known antidote to logic is McCoy.');
+  });
+
+  it('mode=mccoy with category filter still works', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=mccoy&category=advice');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { category: string; rebuttal: string };
+    expect(body.category).toBe('advice');
+    expect(body.rebuttal.length).toBeGreaterThan(0);
+  });
+});
+
+describe('?mode=mccoy on /assess', () => {
+  it('adds rebuttal field to JSON response', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=this+will+work&mode=mccoy');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { claim: string; verdict: string; reasoning: string; probability_of_success: string; rebuttal: string };
+    expect(typeof body.rebuttal).toBe('string');
+    expect(body.rebuttal.length).toBeGreaterThan(0);
+    expect(body.claim).toBe('this will work');
+  });
+
+  it('format=text with mode=mccoy returns exactly three lines', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test&mode=mccoy&format=text');
+    expect(res.status).toBe(200);
+    const txt = await res.text();
+    const lines = txt.split('\n');
+    expect(lines).toHaveLength(3);
+    lines.forEach((l) => expect(l.length).toBeGreaterThan(0));
+  });
+
+  it('sets X-Dammit-Jim header', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test&mode=mccoy');
+    expect(res.headers.get('X-Dammit-Jim')).toBeTruthy();
+  });
+
+  it('unknown mode returns 400 with McCoy error', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test&mode=bones');
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBe('Unknown mode. The only known antidote to logic is McCoy.');
+  });
+});
