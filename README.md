@@ -1,5 +1,7 @@
 # Vulcan Logic as a Service 🖖
 
+![Vulcan Logic as a Service — terminal-style banner with a wireframe salute and the readout: probability of success 0.0417%](assets/vlaas-social-preview.png)
+
 > *Spock as a Service* — a free joke API that returns original Vulcan-style logic pronouncements, in the spirit of No-as-a-Service.
 
 **Coming soon.** Full documentation, live endpoint, curl examples, and integration guides will be available at v1.0 launch.

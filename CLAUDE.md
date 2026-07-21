@@ -15,6 +15,12 @@ Modeled on "No as a Service." Cloudflare Worker, TypeScript, no framework.
 - `npm run dev` — wrangler dev (local)
 - `npm run deploy` — wrangler deploy
 
+## Assets
+- Banner: `assets/vlaas-social-preview.png` (1280×640 px, 903 KB)
+- Use for README hero and landing page hero.
+- Alt text: "Vulcan Logic as a Service — terminal-style banner with a wireframe
+  salute and the readout: probability of success 0.0417%"
+
 ## Style
 - TypeScript strict mode. No `any`.
 - Responses: JSON default, `?format=text` for plaintext, CORS `*` always.
