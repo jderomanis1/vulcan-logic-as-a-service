@@ -101,6 +101,83 @@ describe('GET /categories', () => {
   });
 });
 
+// ── /assess ───────────────────────────────────────────────────────────────────
+describe('GET /assess', () => {
+  it('returns 200 JSON with claim, verdict, reasoning, probability_of_success', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=my+sprint+will+finish+on+time');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { claim: string; verdict: string; reasoning: string; probability_of_success: string };
+    expect(body.claim).toBe('my sprint will finish on time');
+    expect(typeof body.verdict).toBe('string');
+    expect(body.verdict.length).toBeGreaterThan(0);
+    expect(typeof body.reasoning).toBe('string');
+    expect(body.reasoning.length).toBeGreaterThan(0);
+    expect(body.probability_of_success).toMatch(/^\d+\.\d{4}%$/);
+  });
+
+  it('verdict contains the claim text', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=this+will+work');
+    const body = await res.json() as { verdict: string };
+    expect(body.verdict).toContain('this will work');
+  });
+
+  it('sets standard headers', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test');
+    await expectStandardHeaders(res);
+    expect(res.headers.get('Content-Type')).toMatch(/application\/json/);
+  });
+
+  it('returns 400 when claim param is absent', async () => {
+    const res = await SELF.fetch('http://example.com/assess');
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: string };
+    expect(body.error.length).toBeGreaterThan(0);
+  });
+
+  it('returns 400 when claim is an empty string', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=');
+    expect(res.status).toBe(400);
+    const body = await res.json() as { error: string };
+    expect(body.error.length).toBeGreaterThan(0);
+  });
+
+  it('returns 413 when claim exceeds 280 characters', async () => {
+    const longClaim = 'a'.repeat(281);
+    const res = await SELF.fetch(`http://example.com/assess?claim=${longClaim}`);
+    expect(res.status).toBe(413);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBe('Brevity is logical. Your claim is not.');
+  });
+
+  it('HTML-escapes < > in the claim field', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=%3Cscript%3Ealert(1)%3C%2Fscript%3E');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { claim: string; verdict: string };
+    expect(body.claim).not.toContain('<script>');
+    expect(body.claim).toContain('&lt;script&gt;');
+  });
+
+  it('HTML-escaped claim also appears escaped in verdict', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=%3Cscript%3Ealert(1)%3C%2Fscript%3E');
+    const body = await res.json() as { verdict: string };
+    expect(body.verdict).not.toContain('<script>');
+    expect(body.verdict).toContain('&lt;script&gt;');
+  });
+
+  it('returns plaintext with format=text', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test&format=text');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toMatch(/text\/plain/);
+    const txt = await res.text();
+    expect(txt).toContain('test');
+  });
+
+  it('format=text 400 still returns text/plain', async () => {
+    const res = await SELF.fetch('http://example.com/assess?format=text');
+    expect(res.status).toBe(400);
+  });
+});
+
 // ── unknown routes ────────────────────────────────────────────────────────────
 describe('Unknown routes', () => {
   it('returns 404 JSON with error message', async () => {

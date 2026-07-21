@@ -1,10 +1,12 @@
 import phrases from './phrases.json';
+import assessments from './assessments.json';
 
 type Category = 'verdict' | 'probability' | 'fascinating' | 'emotion' | 'advice';
 type Phrase = { id: number; category: Category; phrase: string };
 
 const VALID_CATEGORIES: Category[] = ['verdict', 'probability', 'fascinating', 'emotion', 'advice'];
 const PHRASES = phrases as Phrase[];
+const ASSESSMENTS = assessments as string[];
 
 function pseudoProbability(): string {
   return (Math.random() * 11.9999 + 0.0001).toFixed(4) + '%';
@@ -12,6 +14,15 @@ function pseudoProbability(): string {
 
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
 }
 
 function stdHeaders(extra: Record<string, string> = {}): HeadersInit {
@@ -70,6 +81,30 @@ export default {
       return isText
         ? text(categories.map((c) => `${c.name}: ${c.count}`).join('\n'))
         : json({ categories });
+    }
+
+    // GET /assess?claim=<string>
+    if (url.pathname === '/assess') {
+      const raw = url.searchParams.get('claim');
+
+      if (raw === null || raw.trim() === '') {
+        const err = { error: 'A claim is required. Logic cannot assess a vacuum.' };
+        return isText ? text(err.error, 400) : json(err, 400);
+      }
+
+      if (raw.length > 280) {
+        const err = { error: 'Brevity is logical. Your claim is not.' };
+        return isText ? text(err.error, 413) : json(err, 413);
+      }
+
+      const claim = escapeHtml(raw);
+      const verdict = `After analysis, the claim '${claim}' is illogical.`;
+      const reasoning = pick(ASSESSMENTS);
+      const probability_of_success = pseudoProbability();
+
+      return isText
+        ? text(`${verdict}\n${reasoning}`)
+        : json({ claim, verdict, reasoning, probability_of_success });
     }
 
     // 404
