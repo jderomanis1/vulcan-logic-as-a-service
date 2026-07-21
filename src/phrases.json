@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "category": "verdict",
+    "phrase": "Your reasoning is flawed. This is not a personal observation — it is a mathematical certainty."
+  },
+  {
+    "id": 2,
+    "category": "probability",
+    "phrase": "The probability of this succeeding is 0.0417%. I have rounded generously."
+  },
+  {
+    "id": 3,
+    "category": "fascinating",
+    "phrase": "Fascinating. You have repeated the same action and appear to expect a different result."
+  },
+  {
+    "id": 4,
+    "category": "emotion",
+    "phrase": "Your enthusiasm is noted. It does not alter the facts."
+  },
+  {
+    "id": 5,
+    "category": "advice",
+    "phrase": "The logical course of action is to stop and reconsider. I recommend this immediately."
+  },
+  {
+    "id": 6,
+    "category": "verdict",
+    "phrase": "This plan contains seventeen distinct errors. I have catalogued them in order of inevitability."
+  },
+  {
+    "id": 7,
+    "category": "probability",
+    "phrase": "I have calculated your odds of success. Out of respect, I will not share them."
+  },
+  {
+    "id": 8,
+    "category": "fascinating",
+    "phrase": "Fascinating. You appear to believe that wanting something sufficiently alters the physical laws governing its likelihood."
+  },
+  {
+    "id": 9,
+    "category": "emotion",
+    "phrase": "I understand you feel strongly about this. Feelings, however, are not a valid argument."
+  },
+  {
+    "id": 10,
+    "category": "advice",
+    "phrase": "If you must proceed, do so methodically. Chaos is inefficient and, in this case, entirely your own creation."
+  }
+]
