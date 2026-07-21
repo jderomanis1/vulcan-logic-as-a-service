@@ -58,7 +58,7 @@ export default {
     const modeParam = url.searchParams.get('mode');
     const isMcCoy = modeParam === 'mccoy';
     const badMode = modeParam !== null && !isMcCoy;
-    const mccoyHdr = isMcCoy ? { 'X-Dammit-Jim': "I'm a doctor" } : {};
+    const mccoyHdr = isMcCoy ? { 'X-Dammit': 'im-a-doctor-not-an-api' } : {};
 
     // GET /health
     if (url.pathname === '/health') {

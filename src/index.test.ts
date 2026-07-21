@@ -215,9 +215,9 @@ describe('?mode=mccoy on /logic', () => {
     lines.forEach((l) => expect(l.length).toBeGreaterThan(0));
   });
 
-  it('sets X-Dammit-Jim header', async () => {
+  it('sets X-Dammit header', async () => {
     const res = await SELF.fetch('http://example.com/logic?mode=mccoy');
-    expect(res.headers.get('X-Dammit-Jim')).toBeTruthy();
+    expect(res.headers.get('X-Dammit')).toBe('im-a-doctor-not-an-api');
   });
 
   it('unknown mode returns 400 with McCoy error', async () => {
@@ -255,9 +255,9 @@ describe('?mode=mccoy on /assess', () => {
     lines.forEach((l) => expect(l.length).toBeGreaterThan(0));
   });
 
-  it('sets X-Dammit-Jim header', async () => {
+  it('sets X-Dammit header', async () => {
     const res = await SELF.fetch('http://example.com/assess?claim=test&mode=mccoy');
-    expect(res.headers.get('X-Dammit-Jim')).toBeTruthy();
+    expect(res.headers.get('X-Dammit')).toBe('im-a-doctor-not-an-api');
   });
 
   it('unknown mode returns 400 with McCoy error', async () => {
