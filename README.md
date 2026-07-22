@@ -8,15 +8,14 @@
 **A free API dispensing original Vulcan-register logic pronouncements.**
 In the spirit of [No as a Service](https://noasaservice.com/). Cloudflare Worker. No auth. No rate limit. No mercy.
 
-**Live:** `https://vulcan-logic-as-a-service.YOUR-ACCOUNT.workers.dev`
-*(replace with your actual workers.dev URL after `npm run deploy`)*
+**Live:** https://vulcan-logic-as-a-service.joederomanis.workers.dev
 
 ---
 
 ## The signature demo
 
 ```
-$ curl 'https://vulcan-logic-as-a-service.example.workers.dev/logic?mode=mccoy'
+$ curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?mode=mccoy'
 ```
 
 > **Spock:** Your reasoning contains seventeen assumptions. None of them survive scrutiny.
@@ -48,21 +47,21 @@ Returns a random Vulcan-register pronouncement.
 
 ```bash
 # Default
-curl https://example.workers.dev/logic
+curl https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic
 # → {"phrase":"Emotions of this intensity typically precede decisions of diminished quality.",
 #    "category":"emotion","probability_of_success":"2.8819%"}
 
 # Filter by category
-curl 'https://example.workers.dev/logic?category=advice'
+curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?category=advice'
 # → {"phrase":"Proceed. But understand that I am tracking the outcome closely.",
 #    "category":"advice","probability_of_success":"1.3555%"}
 
 # McCoy mode
-curl 'https://example.workers.dev/logic?mode=mccoy'
+curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?mode=mccoy'
 # → {..., "rebuttal":"I've never once shrunk a goal until the math liked it..."}
 
 # Plain text
-curl 'https://example.workers.dev/logic?format=text'
+curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?format=text'
 # → Do not confuse the map for the territory. The map has an error you are about to walk into.
 ```
 
@@ -89,7 +88,7 @@ Assesses a claim with Vulcan severity.
 | `format` | string | `text` for plain text |
 
 ```bash
-curl 'https://example.workers.dev/assess?claim=my+sprint+will+finish+on+time'
+curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/assess?claim=my+sprint+will+finish+on+time'
 ```
 
 ```json
@@ -103,7 +102,7 @@ curl 'https://example.workers.dev/assess?claim=my+sprint+will+finish+on+time'
 
 **With McCoy:**
 ```bash
-curl 'https://example.workers.dev/assess?claim=this+will+work&mode=mccoy'
+curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/assess?claim=this+will+work&mode=mccoy'
 ```
 ```json
 {
@@ -130,7 +129,7 @@ curl 'https://example.workers.dev/assess?claim=this+will+work&mode=mccoy'
 Returns all categories and their phrase counts.
 
 ```bash
-curl https://example.workers.dev/categories
+curl https://vulcan-logic-as-a-service.joederomanis.workers.dev/categories
 ```
 ```json
 {
@@ -149,7 +148,7 @@ curl https://example.workers.dev/categories
 ### `GET /health`
 
 ```bash
-curl https://example.workers.dev/health
+curl https://vulcan-logic-as-a-service.joederomanis.workers.dev/health
 # → {"status":"functioning within normal parameters"}
 ```
 
@@ -169,13 +168,13 @@ curl https://example.workers.dev/health
 
 **bash alias** — add to `~/.bashrc` or `~/.zshrc`:
 ```bash
-alias spock='curl -s "https://example.workers.dev/logic" | jq -r .phrase'
-alias mccoy='curl -s "https://example.workers.dev/logic?mode=mccoy" | jq -r "[.phrase, .rebuttal] | join(\"\n---\n\")"'
+alias spock='curl -s "https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic" | jq -r .phrase'
+alias mccoy='curl -s "https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?mode=mccoy" | jq -r "[.phrase, .rebuttal] | join(\"\n---\n\")"'
 ```
 
 **Python one-liner:**
 ```python
-python3 -c "import urllib.request,json; d=json.loads(urllib.request.urlopen('https://example.workers.dev/logic').read()); print(d['phrase'])"
+python3 -c "import urllib.request,json; d=json.loads(urllib.request.urlopen('https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic').read()); print(d['phrase'])"
 ```
 
 **GitHub Actions — post on failure:**
@@ -183,13 +182,13 @@ python3 -c "import urllib.request,json; d=json.loads(urllib.request.urlopen('htt
 - name: Consult Logic on failure
   if: failure()
   run: |
-    curl -s "https://example.workers.dev/assess?claim=this+build+will+pass&mode=mccoy" \
+    curl -s "https://vulcan-logic-as-a-service.joederomanis.workers.dev/assess?claim=this+build+will+pass&mode=mccoy" \
       | jq -r '"Spock: \(.verdict)\nMcCoy: \(.rebuttal)"'
 ```
 
 **Slack incoming webhook — daily standup motivator:**
 ```bash
-PHRASE=$(curl -s "https://example.workers.dev/logic?category=advice" | jq -r .phrase)
+PHRASE=$(curl -s "https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?category=advice" | jq -r .phrase)
 curl -s -X POST "$SLACK_WEBHOOK" \
   -H 'Content-Type: application/json' \
   -d "{\"text\":\"*Vulcan Standup Wisdom:* $PHRASE\"}"
