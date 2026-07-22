@@ -1,6 +1,7 @@
 import phrases from './phrases.json';
 import assessments from './assessments.json';
 import rebuttals from './rebuttals.json';
+import { landingHtml } from './landing';
 
 type Category = 'verdict' | 'probability' | 'fascinating' | 'emotion' | 'advice';
 type RebuttalCat = Category | 'assessment';
@@ -59,6 +60,13 @@ export default {
     const isMcCoy = modeParam === 'mccoy';
     const badMode = modeParam !== null && !isMcCoy;
     const mccoyHdr = isMcCoy ? { 'X-Dammit': 'im-a-doctor-not-an-api' } : {};
+
+    // GET /
+    if (url.pathname === '/') {
+      return new Response(landingHtml(url.origin), {
+        headers: stdHeaders({ 'Content-Type': 'text/html; charset=utf-8' }) as Record<string, string>,
+      });
+    }
 
     // GET /health
     if (url.pathname === '/health') {

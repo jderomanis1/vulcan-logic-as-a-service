@@ -178,6 +178,26 @@ describe('GET /assess', () => {
   });
 });
 
+// ── GET / (landing page) ──────────────────────────────────────────────────────
+describe('GET /', () => {
+  it('returns 200 text/html', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toMatch(/text\/html/);
+  });
+
+  it('contains fan-project disclaimer', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    const html = await res.text();
+    expect(html).toContain('fan project');
+  });
+
+  it('sets standard headers', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    await expectStandardHeaders(res);
+  });
+});
+
 // ── unknown routes ────────────────────────────────────────────────────────────
 describe('Unknown routes', () => {
   it('returns 404 JSON with error message', async () => {
