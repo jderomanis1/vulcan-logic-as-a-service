@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **A free API dispensing original Vulcan-register logic pronouncements.**
-In the spirit of [No as a Service](https://noasaservice.com/). Cloudflare Worker. No auth. No rate limit. No mercy.
+In the spirit of No as a Service. Cloudflare Worker. No auth. No rate limit. No mercy.
 
 **Live:** https://vulcan-logic-as-a-service.joederomanis.workers.dev
 
