@@ -79,11 +79,11 @@ curl 'https://vulcan-logic-as-a-service.joederomanis.workers.dev/logic?format=te
 
 ### `GET /assess?claim=<text>`
 
-Assesses a claim with Vulcan severity.
+Assesses a claim with Vulcan severity. **`claim` values must be percent-encoded** (e.g. spaces as `+` or `%20`).
 
 | Parameter | Type | Description |
 |---|---|---|
-| `claim` | string | **Required.** Max 280 characters. |
+| `claim` | string | **Required.** Max 280 characters. Percent-encode special characters. |
 | `mode` | string | `mccoy` adds a rebuttal |
 | `format` | string | `text` for plain text |
 

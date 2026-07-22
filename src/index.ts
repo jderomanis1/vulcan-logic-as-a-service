@@ -55,32 +55,56 @@ function pickRebuttal(cat: RebuttalCat): string {
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
+    const path = url.pathname.replace(/\/$/, '') || '/';
+    const method = request.method;
+
+    // OPTIONS preflight
+    if (method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: stdHeaders({
+          'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+          'Access-Control-Allow-Headers': '*',
+          'Access-Control-Max-Age': '86400',
+        }) as Record<string, string>,
+      });
+    }
+
+    // Method guard
+    if (method !== 'GET' && method !== 'HEAD') {
+      return json(
+        { error: 'That method is illogical. GET is the only rational choice.' },
+        405,
+        { Allow: 'GET, HEAD' },
+      );
+    }
+
     const isText = url.searchParams.get('format') === 'text';
-    const modeParam = url.searchParams.get('mode');
+    const modeParam = url.searchParams.get('mode')?.toLowerCase() ?? null;
     const isMcCoy = modeParam === 'mccoy';
     const badMode = modeParam !== null && !isMcCoy;
     const mccoyHdr = isMcCoy ? { 'X-Dammit': 'im-a-doctor-not-an-api' } : {};
 
     // GET /
-    if (url.pathname === '/') {
+    if (path === '/') {
       return new Response(landingHtml(url.origin), {
         headers: stdHeaders({ 'Content-Type': 'text/html; charset=utf-8' }) as Record<string, string>,
       });
     }
 
     // GET /health
-    if (url.pathname === '/health') {
+    if (path === '/health') {
       const status = 'functioning within normal parameters';
       return isText ? text(status) : json({ status });
     }
 
     // GET /logic[?category=X][&mode=mccoy][&format=text]
-    if (url.pathname === '/logic') {
+    if (path === '/logic') {
       if (badMode) {
         const err = { error: 'Unknown mode. The only known antidote to logic is McCoy.' };
         return isText ? text(err.error, 400) : json(err, 400);
       }
-      const catParam = url.searchParams.get('category');
+      const catParam = url.searchParams.get('category')?.toLowerCase() ?? null;
       let pool = PHRASES;
 
       if (catParam !== null) {
@@ -104,7 +128,7 @@ export default {
     }
 
     // GET /categories
-    if (url.pathname === '/categories') {
+    if (path === '/categories') {
       const categories = VALID_CATEGORIES.map((name) => ({
         name,
         count: PHRASES.filter((p) => p.category === name).length,
@@ -115,7 +139,7 @@ export default {
     }
 
     // GET /assess?claim=<string>[&mode=mccoy][&format=text]
-    if (url.pathname === '/assess') {
+    if (path === '/assess') {
       if (badMode) {
         const err = { error: 'Unknown mode. The only known antidote to logic is McCoy.' };
         return isText ? text(err.error, 400) : json(err, 400);
@@ -127,12 +151,14 @@ export default {
         return isText ? text(err.error, 400) : json(err, 400);
       }
 
-      if (raw.length > 280) {
+      const sanitized = raw.replace(/\0/g, '').replace(/\r\n|\r|\n/g, ' ');
+
+      if (sanitized.length > 280) {
         const err = { error: 'Brevity is logical. Your claim is not.' };
         return isText ? text(err.error, 413) : json(err, 413);
       }
 
-      const claim = escapeHtml(raw);
+      const claim = escapeHtml(sanitized);
       const verdict = `After analysis, the claim '${claim}' is illogical.`;
       const reasoning = pick(ASSESSMENTS);
       const probability_of_success = pseudoProbability();

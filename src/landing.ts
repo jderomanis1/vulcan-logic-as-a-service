@@ -6,6 +6,15 @@ export function landingHtml(origin: string): string {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Vulcan Logic as a Service</title>
 <meta name="description" content="A free API dispensing original Vulcan-register logic pronouncements. Probability of success: 0.0417%.">
+<meta property="og:title" content="Vulcan Logic as a Service">
+<meta property="og:description" content="A free API dispensing original Vulcan-register logic pronouncements. Probability of success: 0.0417%.">
+<meta property="og:image" content="https://raw.githubusercontent.com/jderomanis1/vulcan-logic-as-a-service/main/assets/vlaas-social-preview.png">
+<meta property="og:url" content="${origin}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Vulcan Logic as a Service">
+<meta name="twitter:description" content="A free API dispensing original Vulcan-register logic pronouncements. Probability of success: 0.0417%.">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/jderomanis1/vulcan-logic-as-a-service/main/assets/vlaas-social-preview.png">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
