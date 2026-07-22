@@ -21,6 +21,9 @@ Modeled on "No as a Service." Cloudflare Worker, TypeScript, no framework.
 - Alt text: "Vulcan Logic as a Service — terminal-style banner with a wireframe
   salute and the readout: probability of success 0.0417%"
 
+## Git workflow
+Trunk-based. All commits go directly to main. Never create feature branches.
+
 ## Style
 - TypeScript strict mode. No `any`.
 - Responses: JSON default, `?format=text` for plaintext, CORS `*` always.
