@@ -256,6 +256,158 @@ describe('?mode=mccoy on /logic', () => {
   });
 });
 
+// ── method guard ─────────────────────────────────────────────────────────────
+describe('Method guard', () => {
+  it('POST /logic returns 405 with error body', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'POST' });
+    expect(res.status).toBe(405);
+    const body = await res.json() as { error: string };
+    expect(body.error).toBe('That method is illogical. GET is the only rational choice.');
+  });
+
+  it('DELETE /logic returns 405', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'DELETE' });
+    expect(res.status).toBe(405);
+  });
+
+  it('PUT /assess returns 405', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=test', { method: 'PUT' });
+    expect(res.status).toBe(405);
+  });
+
+  it('405 includes Allow: GET, HEAD header', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'POST' });
+    expect(res.headers.get('Allow')).toBe('GET, HEAD');
+  });
+
+  it('HEAD /logic still returns 200', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'HEAD' });
+    expect(res.status).toBe(200);
+  });
+});
+
+// ── OPTIONS preflight ─────────────────────────────────────────────────────────
+describe('OPTIONS preflight', () => {
+  it('returns 204', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'OPTIONS' });
+    expect(res.status).toBe(204);
+  });
+
+  it('sets Access-Control-Allow-Methods: GET, HEAD, OPTIONS', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'OPTIONS' });
+    expect(res.headers.get('Access-Control-Allow-Methods')).toBe('GET, HEAD, OPTIONS');
+  });
+
+  it('sets Access-Control-Allow-Headers: *', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'OPTIONS' });
+    expect(res.headers.get('Access-Control-Allow-Headers')).toBe('*');
+  });
+
+  it('sets Access-Control-Max-Age: 86400', async () => {
+    const res = await SELF.fetch('http://example.com/logic', { method: 'OPTIONS' });
+    expect(res.headers.get('Access-Control-Max-Age')).toBe('86400');
+  });
+});
+
+// ── case normalization ────────────────────────────────────────────────────────
+describe('Case normalization', () => {
+  it('?category=ADVICE returns 200 with category=advice', async () => {
+    const res = await SELF.fetch('http://example.com/logic?category=ADVICE');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { category: string };
+    expect(body.category).toBe('advice');
+  });
+
+  it('?category=Verdict returns 200 with category=verdict', async () => {
+    const res = await SELF.fetch('http://example.com/logic?category=Verdict');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { category: string };
+    expect(body.category).toBe('verdict');
+  });
+
+  it('?mode=MCCOY returns 200 with rebuttal', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=MCCOY');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { rebuttal: string };
+    expect(typeof body.rebuttal).toBe('string');
+    expect(body.rebuttal.length).toBeGreaterThan(0);
+  });
+
+  it('?mode=McCoy returns 200 with rebuttal', async () => {
+    const res = await SELF.fetch('http://example.com/logic?mode=McCoy');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { rebuttal: string };
+    expect(body.rebuttal.length).toBeGreaterThan(0);
+  });
+});
+
+// ── claim sanitization ────────────────────────────────────────────────────────
+describe('Claim sanitization', () => {
+  it('strips null bytes from claim and verdict', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=hello%00world');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { claim: string; verdict: string };
+    expect(body.claim).toBe('helloworld');
+    expect(body.claim).not.toContain(' ');
+    expect(body.verdict).not.toContain(' ');
+  });
+
+  it('replaces \\r\\n with a space in claim', async () => {
+    const res = await SELF.fetch('http://example.com/assess?claim=hello%0d%0aworld');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { claim: string };
+    expect(body.claim).not.toContain('\r');
+    expect(body.claim).not.toContain('\n');
+    expect(body.claim).toBe('hello world');
+  });
+});
+
+// ── trailing slash ────────────────────────────────────────────────────────────
+describe('Trailing slash normalization', () => {
+  it('/logic/ returns 200', async () => {
+    const res = await SELF.fetch('http://example.com/logic/');
+    expect(res.status).toBe(200);
+    const body = await res.json() as { phrase: string };
+    expect(body.phrase.length).toBeGreaterThan(0);
+  });
+
+  it('/categories/ returns 200', async () => {
+    const res = await SELF.fetch('http://example.com/categories/');
+    expect(res.status).toBe(200);
+  });
+
+  it('/health/ returns 200', async () => {
+    const res = await SELF.fetch('http://example.com/health/');
+    expect(res.status).toBe(200);
+  });
+
+  it('/assess/?claim=test returns 200', async () => {
+    const res = await SELF.fetch('http://example.com/assess/?claim=test');
+    expect(res.status).toBe(200);
+  });
+});
+
+// ── social meta ───────────────────────────────────────────────────────────────
+describe('GET / social meta', () => {
+  it('includes og:title', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    const html = await res.text();
+    expect(html).toContain('og:title');
+  });
+
+  it('includes og:image pointing at vlaas-social-preview.png', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    const html = await res.text();
+    expect(html).toContain('vlaas-social-preview.png');
+  });
+
+  it('includes twitter:card', async () => {
+    const res = await SELF.fetch('http://example.com/');
+    const html = await res.text();
+    expect(html).toContain('twitter:card');
+  });
+});
+
 describe('?mode=mccoy on /assess', () => {
   it('adds rebuttal field to JSON response', async () => {
     const res = await SELF.fetch('http://example.com/assess?claim=this+will+work&mode=mccoy');
